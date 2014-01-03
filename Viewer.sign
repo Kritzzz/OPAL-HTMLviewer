@@ -1,0 +1,9 @@
+SIGNATURE Viewer
+
+IMPORT 	Settings COMPLETELY
+		Draw COMPLETELY
+		
+IMPORT 	Com ONLY com
+		Void ONLY void
+
+FUN viewer : com[void]

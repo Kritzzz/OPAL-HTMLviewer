@@ -1,0 +1,82 @@
+IMPLEMENTATION Viewer
+
+IMPORT 	Com COMPLETELY
+		ComCompose COMPLETELY
+		Denotation COMPLETELY
+		Nat COMPLETELY
+		Real COMPLETELY
+		Seq COMPLETELY
+		Void COMPLETELY
+IMPORT 	WinButton COMPLETELY
+		WinCanvas COMPLETELY
+		WinCanvasEditor COMPLETELY
+		WinConfig COMPLETELY
+		WinEmitter COMPLETELY
+		WinFontMetrics COMPLETELY
+		WinWindow COMPLETELY
+		WinView COMPLETELY
+
+
+DATA 	gui == gui(edit : canvasEditor,
+		emit : emitter[action],
+		title : denotation,
+		metr : metrics)
+
+DATA 	action == exit
+
+DEF viewer == 	setupGui & (\\G.
+			  	setupWindow(G) & (\\win. 
+
+			  	--drawText(G) &
+				waitForTermination(G, win)))
+
+-- 
+-- Build WINDOW
+--
+
+FUN setupGui : com[gui]
+DEF setupGui == canvasEditor & (\\edit.
+				emitter & (\\emit.
+				fontMetrics(stdFont) & (\\metr.
+				succeed(gui(edit, emit, "Viewer", metr)))))
+
+FUN setupWindow : gui -> com[window]
+DEF setupWindow(G) == window(frame(G)) & (\\win.
+						set(win, titleName(title(G))) & 
+						(\\ _ . grab(win) & 
+						(\\ _ . succeed(win))))
+
+
+FUN waitForTermination : gui ** window -> com[void]
+DEF waitForTermination(G, win) ==
+			await(emit(G)) & (\\act.
+			IF act exit? THEN release(win) & delete(win) & exit(0) FI)
+
+
+FUN frame : gui -> view
+DEF frame(G) == pad(edit(G))
+				^^
+				exitButton(emit(G))
+
+FUN pad : canvasEditor -> view
+DEF pad(editor) == 	canvas with (size(canvasSize)
+					++ edit(editor)
+					++ background(canvasBackground))
+
+FUN exitButton : emitter[action] -> view
+DEF exitButton(emit) == button with (bind(emit, exit)
+						++ text("Beenden"))
+
+
+FUN canvasWidth canvasHeight : real
+DEF canvasWidth == "400" px
+DEF canvasHeight == "280" px
+
+FUN canvasSize : size
+DEF canvasSize == canvasWidth x canvasHeight
+
+FUN canvasBackground : color
+DEF canvasBackground == white
+
+FUN stdFont : font
+DEF stdFont == variable

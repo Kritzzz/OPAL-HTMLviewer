@@ -1,0 +1,5 @@
+OPAL_LIBS += $(OPAL_WIN)
+
+TOPSTRUCT=Viewer
+TOPCOM=viewer
+

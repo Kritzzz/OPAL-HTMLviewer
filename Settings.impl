@@ -1,0 +1,42 @@
+IMPLEMENTATION Settings
+
+IMPORT 	Com COMPLETELY
+		ComCompose COMPLETELY
+		Denotation COMPLETELY
+		Nat COMPLETELY
+		Real COMPLETELY
+		Seq COMPLETELY
+		Void COMPLETELY
+
+
+IMPORT 	WinButton COMPLETELY
+		WinCanvas COMPLETELY
+		WinCanvasEditor COMPLETELY
+		WinConfig COMPLETELY
+		WinEmitter COMPLETELY
+		WinFontMetrics COMPLETELY
+		WinWindow COMPLETELY
+		WinView COMPLETELY
+
+FUN canvasWidth canvasHeight : real
+DEF canvasWidth == "320" px
+DEF canvasHeight == "240" px
+
+FUN canvasSize : size
+DEF canvasSize == canvasWidth x canvasHeight
+
+FUN margin left right middle : real
+DEF margin == "50" px
+
+DEF left == margin
+DEF right == canvasWidth-margin
+DEF middle == canvasWidth/2
+
+FUN canvasBackground : color
+DEF canvasBackground == grey
+
+FUN sampleText : denotation
+DEF sampleText == "Hallo"
+
+FUN stdFont : font
+DEF stdFont == variable
