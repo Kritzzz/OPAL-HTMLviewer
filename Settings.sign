@@ -1,1 +1,25 @@
 SIGNATURE Settings
+
+IMPORT 	Com COMPLETELY
+		ComCompose COMPLETELY
+		Denotation COMPLETELY
+		Nat COMPLETELY
+		Real COMPLETELY
+		Seq COMPLETELY
+		Void COMPLETELY
+
+IMPORT 	WinButton COMPLETELY
+		WinCanvas COMPLETELY
+		WinCanvasEditor COMPLETELY
+		WinConfig COMPLETELY
+		WinEmitter COMPLETELY
+		WinFontMetrics COMPLETELY
+		WinWindow COMPLETELY
+		WinView COMPLETELY
+
+FUN canvasWidth canvasHeight : real
+FUN canvasSize : size
+FUN margin left right middle : real
+FUN canvasBackground : color
+FUN sampleText : denotation
+FUN stdFont : font

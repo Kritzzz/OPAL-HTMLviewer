@@ -18,25 +18,20 @@ IMPORT 	WinButton COMPLETELY
 		WinWindow COMPLETELY
 		WinView COMPLETELY
 
-FUN canvasWidth canvasHeight : real
-DEF canvasWidth == "320" px
-DEF canvasHeight == "240" px
 
-FUN canvasSize : size
+DEF canvasWidth == "800" px
+DEF canvasHeight == "600" px
+
 DEF canvasSize == canvasWidth x canvasHeight
 
-FUN margin left right middle : real
 DEF margin == "50" px
 
 DEF left == margin
 DEF right == canvasWidth-margin
 DEF middle == canvasWidth/2
 
-FUN canvasBackground : color
-DEF canvasBackground == grey
+DEF canvasBackground == white
 
-FUN sampleText : denotation
 DEF sampleText == "Hallo"
 
-FUN stdFont : font
 DEF stdFont == variable

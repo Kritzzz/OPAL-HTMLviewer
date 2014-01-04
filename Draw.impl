@@ -1,36 +1,10 @@
 IMPLEMENTATION Draw
 
 
-IMPORT 	Com COMPLETELY
-		ComCompose COMPLETELY
-		Denotation COMPLETELY
-		Nat COMPLETELY
-		Real COMPLETELY
-		Seq COMPLETELY
-		Void COMPLETELY
-IMPORT 	WinButton COMPLETELY
-		WinCanvas COMPLETELY
-		WinCanvasEditor COMPLETELY
-		WinConfig COMPLETELY
-		WinEmitter COMPLETELY
-		WinFontMetrics COMPLETELY
-		WinWindow COMPLETELY
-		WinView COMPLETELY
 
-/*
-FUN drawText : gui -> com[void]
-DEF drawText(G) ==
-			display(edit(G), picture(metr(G)))
+-- DEF drawText(G) == display(edit(G), picture(metr(G)))
 
-FUN picture : metrics -> drawing
 DEF picture(metr) == line 
 
-FUN line : drawing
 DEF line == line(%(left @ ("40" px), right @ ("40" px)))
 
-FUN margin left right middle : real
-DEF margin == "50" px
-
-DEF left == margin
-DEF right == canvasWidth-margin
-*/
