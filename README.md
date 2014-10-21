@@ -17,7 +17,7 @@ Zum Kompilieren des Programmes den Compiler aufrufen, indem sich die ```SysDef``
 	
 Das kompilierte Programm wird dann wie folgt gestartet.
 
-	$ ./viewer
+	$ ./viewer test.html
 
 
 
