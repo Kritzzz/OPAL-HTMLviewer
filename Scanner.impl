@@ -1,0 +1,164 @@
+IMPLEMENTATION Scanner
+
+IMPORT Token COMPLETELY
+IMPORT String COMPLETELY
+IMPORT StringConv COMPLETELY
+IMPORT Denotation COMPLETELY
+IMPORT Char COMPLETELY
+IMPORT Nat COMPLETELY
+IMPORT Seq COMPLETELY
+IMPORT SeqMap COMPLETELY
+IMPORT Map[string,<,token] COMPLETELY
+
+-- -------------------------------------------------------------------------------------------------------------------
+-- --------------------------------------------- MAIN FUNCTIONS ------------------------------------------------------
+-- -------------------------------------------------------------------------------------------------------------------
+ 
+FUN scan: string -> seq[token]
+
+DEF scan(text) == translation(partition(text))
+
+
+	FUN partition: string -> seq[string]
+	-- breaks the string "text" into a seq[string]
+	DEF partition(text) 	== p1(dropWhitespace(text))
+		FUN p1: string -> seq[string]
+		-- now the string starts with a nonwhitespace character
+		DEF p1(<>) 		== <> 
+		DEF p1(text)		== LET 
+						i 		== IF lt?(ft(text)) THEN locate(gt?)(text) +1
+						     	     			     ELSE locate(whitespaceOrLt)(text) FI
+						(word,rest)	== tSplit(i,text)
+				   	   IN word :: partition(rest)			
+	FUN translation:  seq[string] -> seq[token]
+	-- translates seq[string] with the map "table" into a seq[token]
+	DEF translation(strings)	== trans * strings -- * is the function map from the structue SeqMap
+		FUN trans: string -> token
+		-- translates strings into tokens;  translated into html-parts if in the map "table" or words if unknown
+		DEF trans(str) == IF def?(str,table) THEN table!str
+						      ELSE word(str) FI
+
+-- -------------------------------------------------------------------------------------------------------------------
+-- --------------------------------------------- AUXILIARY FUNCTIONS -------------------------------------------------
+-- -------------------------------------------------------------------------------------------------------------------
+
+
+
+
+-- --------------------------------------------- SCANNING ------------------------------------------------------------
+
+FUN exists: (char -> bool) -> string -> bool
+-- returns true, when some character in a string "s" fulfills the predicate "p"
+DEF exists(p)(<>)	== false
+DEF exists(p)(a::rest) 	== IF p(a) THEN true
+					ELSE exists(p)(rest) FI
+
+
+FUN locate: (char -> bool) -> string -> nat
+-- returns the position of the first character in string "s" that wilfills the predicate "p"; returns a value>length("s") if there is no character that fulfills "p"
+DEF locate(p)(<>) 	== 1 
+DEF locate(p)(a::rest)	== IF p(a) THEN 0
+			               ELSE 1 + locate(p)(rest) FI
+
+
+FUN nonWhitespace?: char -> bool 
+-- returns true if the character "c" is not whitespace
+DEF nonWhitespace?(c) 	== IF (whitespace?(c)) THEN false
+						   ELSE true FI
+
+
+
+FUN dropWhitespace: string -> string
+-- drops all first characters until the first character is not whitespace
+DEF dropWhitespace(<>)	== <>
+DEF dropWhitespace(a::rest)== IF nonWhitespace?(a) THEN (a::rest)
+					 	   ELSE dropWhitespace(rest) FI
+
+FUN tSplit: nat ** string -> string ** string
+-- the "split" function in the structure "string" is partial so we define a total version
+DEF tSplit(i,str)	== IF i > #(str) THEN (str,<>)
+					     ELSE split(i,str) FI
+
+
+FUN lt? gt?: char -> bool
+-- returns true when inputcharacter "c" is "<" or ">"
+DEF lt?(c) 		== c = !"<"
+DEF gt?(c) 		== c = !">"
+
+
+
+FUN whitespaceOrLt: char -> bool
+-- returns true when inputcharacter "c" is whitespace or "<"
+DEF whitespaceOrLt(c) 	== whitespace?(c) or lt?(c)
+
+
+
+-- --------------------------------------------- TOKENIZING ----------------------------------------------------------
+
+FUN table: map[string,<,token]
+-- table for translating strings into tokens
+DEF table		==   (!"<html>", openHtml) +
+				((!"</html>", closeHtml) +
+				((!"</body>", closeBody) +
+				((!"<body>", openBody) +
+				((!"<title>", openTitle) +
+				((!"</title>", closeTitle) +
+				((!"<p style=\"text-align:right\">", openRight) +
+				((!"<p style=\"text-align:left\">", openLeft) +
+				((!"<p style=\"text-align:center\">", openCenter) +
+				((!"<p style=\"text-align:justify\">", openJustify) +
+				((!"</p>", closePar) +
+				{}))))))))))
+
+FUN + : string ** token ** map -> map
+-- abbreviation for innfix notation of the function "def" from the structure "Map"
+DEF +(x,y,m) 		== def(x,y,m)
+			
+								
+				
+
+-- --------------------------------------------- TESTING -------------------------------------------------------------
+
+FUN testString : string
+
+DEF testString == !("<html><title>Titeltext</title><body><p style=\"text-align:left\">Das ist der erste Paragraph.</p><p style=\"text-align:justify\">Das ist der zweite Paragraph.</p></body></html>")
+
+FUN bt : seq[token] -> seq[denotation]
+-- backtick function for seq[token] 
+DEF bt(<>) == <>
+DEF bt(openHtml::rest) == "openHtml":: bt(rest)  
+DEF bt(closeHtml::rest) == "closeHtml":: bt(rest)  
+DEF bt(openTitle::rest) == "openTitle":: bt(rest)  
+DEF bt(closeTitel::rest) == "closeTitel":: bt(rest)  
+DEF bt(openBody::rest) == "openHtml":: bt(rest)  
+DEF bt(closeBody::rest) == "openHtml":: bt(rest)  
+DEF bt(openLeft::rest) == "openHtml":: bt(rest)  
+DEF bt(openRight::rest) == "openHtml":: bt(rest)  
+DEF bt(openCenter::rest) == "openHtml":: bt(rest)  
+DEF bt(openJustify::rest) == "openHtml":: bt(rest)  
+DEF bt(openPar::rest) == "openHtml":: bt(rest)  
+DEF bt(word(cont)::rest) == ("word: " ++ `(cont)) :: bt(rest)  
+DEF bt(error::rest) == "error":: bt(rest)  
+
+
+
+FUN bts : seq[token] -> seq[string]
+-- backtick function for seq[token] 
+DEF bts(<>) == <>
+DEF bts(openHtml::rest) == !"openHtml":: bts(rest)  
+DEF bts(closeHtml::rest) == !"closeHtml":: bts(rest)  
+DEF bts(openTitle::rest) == !"openTitle":: bts(rest)  
+DEF bts(closeTitel::rest) == !"closeTitel":: bts(rest)  
+DEF bts(openBody::rest) == !"openHtml":: bts(rest)  
+DEF bts(closeBody::rest) == !"openHtml":: bts(rest)  
+DEF bts(openLeft::rest) == !"openHtml":: bts(rest)  
+DEF bts(openRight::rest) == !"openHtml":: bts(rest)  
+DEF bts(openCenter::rest) == !"openHtml":: bts(rest)  
+DEF bts(openJustify::rest) == !"openHtml":: bts(rest)  
+DEF bts(openPar::rest) == !"openHtml":: bts(rest)  
+DEF bts(word(content)::rest) == content :: bts(rest)  
+DEF bts(error::rest) == !("error") :: bts(rest)  
+
+
+
+

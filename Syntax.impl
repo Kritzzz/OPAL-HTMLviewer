@@ -1,0 +1,19 @@
+IMPLEMENTATION Syntax
+
+IMPORT	String		ONLY string
+	Seq		ONLY seq
+
+DATA html == html(title: title, body: body)
+             fail
+
+DATA title == title(content: seq[string])
+		fail
+
+DATA body == body(content: seq[par])
+		fail
+
+DATA par == par(align: alignment, content: seq[string])
+		fail
+
+DATA alignment == left right center justify
+

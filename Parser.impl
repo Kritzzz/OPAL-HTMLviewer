@@ -1,0 +1,172 @@
+IMPLEMENTATION Parser
+
+IMPORT Scanner COMPLETELY
+IMPORT Token COMPLETELY
+IMPORT String COMPLETELY
+IMPORT StringConv COMPLETELY
+IMPORT Denotation COMPLETELY
+IMPORT Char COMPLETELY
+IMPORT Nat COMPLETELY
+IMPORT Seq COMPLETELY
+IMPORT Syntax COMPLETELY
+
+
+
+-- -----------------------------------------------------------------------------------------
+-- ------------------------------------- PARSING -------------------------------------------
+-- ----------------------------------------------------------------------------------------- 		
+
+
+-- ---------------------------------------- TERMINALS ----------------------------------------------
+FUN parseOH: seq[token] -> seq[token]	
+
+DEF parseOH(t::rest) == IF openHtml?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+FUN parseCH: seq[token] -> seq[token]	
+
+DEF parseCH(t::rest) == IF closeHtml?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+FUN parseOB: seq[token] -> seq[token]	
+
+DEF parseOB(t::rest) == IF openBody?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+FUN parseCB: seq[token] -> seq[token]	
+
+DEF parseCB(t::rest) == IF closeBody?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+FUN parseOT: seq[token] -> seq[token]	
+
+DEF parseOT(t::rest) == IF openTitle?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+FUN parseCT: seq[token] -> seq[token]	
+
+DEF parseCT(t::rest) == IF closeTitle?(t) THEN rest
+					 ELSE error::(t::rest) FI 
+
+
+
+
+
+FUN parseCP: seq[token] -> seq[token]	
+
+DEF parseCP(t::rest) == IF closePar?(t) THEN rest
+					 ELSE error::(t::rest) FI   
+
+
+-- ---------------------------------------- NON-TERMINALS -------------------------------------------
+
+FUN parseH:seq[token] -> html ** seq[token]
+
+DEF parseH(input) == LET
+			  r1		== parseOH(input)
+			  (title,r2)	== parseT(r1)
+			  (body,r3)	== parseB(r2)
+			  r4		== parseCH(r3)
+		      IN
+			  IF empty?(r4) THEN (html(title,body),r4)
+					 ELSE (fail,r4) FI
+
+FUN parseT: seq[token] -> title ** seq[token]
+
+DEF parseT(input) == LET
+			  r1 		== parseOT(input)
+			  (words,r2)	== parseWords(r1)
+			  r3		== parseCT(r2)
+		      IN
+			  IF error?(r3) THEN (fail,r3)
+					 ELSE (title(bts(words)),r3) FI
+
+FUN parseWords: seq[token] -> seq[token] ** seq[token]
+	
+DEF parseWords(<>) == (<>,<>)
+DEF parseWords(input AS token::rest) == IF word?(token) THEN LET
+								   (words,r1) == parseWords(rest)
+								IN (token ::words,r1)
+							  ELSE (<>,input) FI
+
+FUN parseB: seq[token] -> body ** seq[token]
+
+DEF parseB(input) == LET
+			  r1 		== parseOB(input)
+			  (paragraphes,r2)== parsePars(r1)
+			  r3 		== parseCB(r2)
+		      IN
+			  IF error?(r3) THEN (fail,r3)
+					 ELSE (body(paragraphes),r3) FI
+
+FUN parseP: seq[token] -> par ** seq[token]
+
+DEF parseP(<>) ==(fail,error:: <>)
+DEF parseP(openLeft :: rest) == LET
+				    (words,r1) 	== parseWords(rest)
+				    r2		==parseCP(r1)
+				IN IF error?(r2) THEN (fail,r2)
+						  ELSE (par(left,bts(words)),r2) FI
+DEF parseP(openRight :: rest) == LET
+				    (words,r1) 	== parseWords(rest)
+				    r2		==parseCP(r1)
+				IN IF error?(r2) THEN (fail,r2)
+						  ELSE (par(right,bts(words)),r2) FI
+DEF parseP(openCenter :: rest) == LET
+				    (words,r1) 	== parseWords(rest)
+				    r2		==parseCP(r1)
+				IN IF error?(r2) THEN (fail,r2)
+						  ELSE (par(center,bts(words)),r2) FI
+DEF parseP(openJustify :: rest) == LET
+				    (words,r1) 	== parseWords(rest)
+				    r2		==parseCP(r1)
+				IN IF error?(r2) THEN (fail,r2)
+						  ELSE (par(justify,bts(words)),r2) FI
+DEF parseP(input) == (fail, error::input)
+
+
+
+FUN parsePars: seq[token] -> seq[par] ** seq[token]
+
+DEF parsePars(<>) == (<>,<>)
+DEF parsePars(input AS token::rest) == IF openPar?(token) THEN LET
+								    (par,r1) 	== parseP(input)
+								    (pars,r2)	== parsePars(r1)
+								IN (par::pars,r2)
+							   ELSE (<>,input) FI 
+
+
+
+-- ---------------------------------------------------------- AUXILIARY FUNCTIONS ----------------------------------------------
+FUN makehtml: html ** seq[token] -> html
+
+DEF makehtml(html,_) == html
+						
+
+FUN error? : seq[token] -> bool
+-- lifting the error? test from tokens to seq[token]
+DEF error?(<>) 		== false
+DEF error?(t::rest) 	== error?(t)
+
+
+
+FUN openPar?: token -> bool
+-- tests if the inputtoken is a possible opener of a paragraph
+DEF openPar?(token) == openLeft?(token) or openRight?(token) or openCenter?(token) or openJustify?(token) 
+
+FUN checkhtml: html ** seq[token] -> bool
+
+DEF checkhtml(html,token) == IF empty?(token) THEN true
+						ELSE false FI
+
+ 

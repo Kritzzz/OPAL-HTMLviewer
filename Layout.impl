@@ -1,0 +1,174 @@
+IMPLEMENTATION Layout
+
+IMPORT	Real COMPLETELY
+	RealConv COMPLETELY
+	Nat  COMPLETELY
+NatConv  COMPLETELY
+	Seq  COMPLETELY
+	Denotation COMPLETELY	
+IMPORT String COMPLETELY
+
+
+IMPORT	WinConfig COMPLETELY
+
+IMPORT Settings COMPLETELY
+IMPORT WinFontMetrics COMPLETELY
+
+IMPORT Syntax COMPLETELY
+IMPORT StringConv COMPLETELY
+
+DATA posWord == posWord(text: string, pos: point, with:real)
+
+FUN testWordsForJustifyAligned : seq[string]
+DEF testWordsForJustifyAligned == 
+	("This"!) :: ("is"!) :: ("a"!) :: ("paragraph"!) :: ("with"!) :: ("justified"!) :: 
+	("alignment."!) :: ("This"!) :: ("means"!) :: ("that"!) :: ("all"!) :: ("rows"!) :: 
+	("are"!) :: ("typeset"!) :: ("with"!) :: ("equal"!) :: ("width"!) :: ("except"!) :: 
+	("for"!) :: ("the"!) :: ("last"!) :: ("one"!) :: ("which"!) :: ("is"!) :: 
+	("typeset"!) :: ("with"!) :: ("ragged"!) :: ("right."!) :: 
+	(<>)
+
+FUN testWordsForCenterAligned : seq[string]
+DEF testWordsForCenterAligned == 
+	("This"!) :: ("is"!) :: ("a"!) :: ("centered"!) :: ("paragraph:"!) :: ("all"!) :: 
+	("rows"!) :: ("appear"!) :: ("in"!) :: ("the"!) :: ("middle"!) :: ("of"!) :: 
+	("the"!) :: ("canvas."!) :: 
+	(<>)
+
+FUN testWordsForRightAligned : seq[string]
+DEF testWordsForRightAligned == 
+	("This"!) :: ("is"!) :: ("a"!) :: ("paragraph"!) :: ("with"!) :: ("right-alignment:"!) :: 
+	("all"!) :: ("rows"!) :: ("are"!) :: ("shifted"!) :: ("to"!) :: ("the"!) :: 
+	("right"!) :: ("margin."!) :: 
+	(<>)
+
+FUN testWordsForLeftAligned : seq[string]
+DEF testWordsForLeftAligned == 
+	("At"!) :: ("last,"!) :: ("we"!) :: ("have"!) :: ("some"!) :: ("ordinary"!) :: 
+	("left"!) :: ("aligned"!) :: ("paragraph"!) :: ("with"!) :: ("ragged"!) :: ("right."!) :: 
+	(<>)
+
+FUN testLeftParagraph : par
+DEF testLeftParagraph == par(left, testWordsForLeftAligned)
+
+FUN testRightParagraph : par
+DEF testRightParagraph == par(right, testWordsForRightAligned)
+
+FUN testCenterParagraph : par
+DEF testCenterParagraph == par(center, testWordsForCenterAligned)
+
+FUN testJustifyParagraph : par
+DEF testJustifyParagraph == par(justify, testWordsForJustifyAligned)
+
+FUN testParagraphs : seq[par]
+DEF testParagraphs == testJustifyParagraph :: testCenterParagraph :: testRightParagraph :: testLeftParagraph :: <>
+
+DEF layout(metric, paragraphs) == layoutParagraphs(metric, startYPos(metric), paragraphs, <>)
+
+FUN layoutParagraphs : metrics ** real ** seq[par] ** seq[posWord] -> seq[posWord]
+DEF layoutParagraphs(metric, yPos, <>, posWords) == posWords
+DEF layoutParagraphs(metric, yPos, paragraphs, posWords) == 
+	LET 
+		(nextYPos, newPosWords) == layoutParagraph(metric, yPos, ft(paragraphs), <>)
+	IN 
+		layoutParagraphs(metric, nextYPos, rt(paragraphs), posWords ++ newPosWords)
+
+
+FUN layoutParagraph : metrics ** real ** par ** seq[posWord] -> real ** seq[posWord]
+DEF layoutParagraph(metric, yPos, par(_,<>), positionedWords) == 
+	(yPos+calcSpaceBetweenParagraphs(metric), positionedWords)
+
+DEF layoutParagraph(metric, yPos, paragraph, positionedWords) == 
+	LET 
+		(wordsInParagraph, wordsInLine) == wordsOfLine(metric, content(paragraph), <>, 0)
+		(space, startx) == calcSpaceAndStartX(align(paragraph), metric, wordsInLine, empty?(wordsInParagraph))
+		newPositionedWords == positionedWords ++ layoutLine(metric, startx, yPos, space, wordsInLine, <>)
+		newYPos == yPos + height(metric)
+	IN
+		layoutParagraph(metric, newYPos, par(align(paragraph), wordsInParagraph), newPositionedWords)
+
+	
+FUN wordsOfLine : metrics ** seq[string] ** seq[string] ** real-> seq[string] ** seq[string]
+DEF wordsOfLine(metric, <>, wordsInLine, currentLength) == (<>, revert(wordsInLine))
+DEF wordsOfLine(metric, wordsInParagraph, wordsInLine, currentLength) == 
+	LET
+		nextWord == ft(wordsInParagraph)
+		remainsInParagraph == rt(wordsInParagraph)
+	IN
+		IF isSpaceForThisWord(metric, currentLength, nextWord) THEN 
+			wordsOfLine(metric, remainsInParagraph, 
+				nextWord :: wordsInLine,
+				currentLength + depth(metric) + length(metric, (`(nextWord))))
+		ELSE
+			(wordsInParagraph, revert(wordsInLine))
+		FI
+
+FUN calcSpaceAndStartX : alignment ** metrics ** seq[string] ** bool-> real ** real
+DEF calcSpaceAndStartX(align, metric, words, isLastLine) == 
+	IF right?(align) THEN (depth(metric), calcStartXForRightAlignment(metric, words))
+	IF center?(align) THEN (depth(metric), calcStartXForCenterAlignment(metric, words))
+	IF justify?(align) and (~(isLastLine)) THEN (calcDepthForJustifyAlignment(metric, words), startXPos(metric))
+	ELSE (depth(metric), startXPos(metric))
+	FI
+
+FUN calcStartXForRightAlignment : metrics ** seq[string] -> real
+DEF calcStartXForRightAlignment(metric, words) == 
+	startXPos(metric) + (lineLength - (((asReal(words#)-1)*depth(metric)) + calcNetLength(metric, words)))
+
+FUN calcStartXForCenterAlignment : metrics ** seq[string] -> real
+DEF calcStartXForCenterAlignment(metric, words) == 
+	startXPos(metric) + (lineLength - (((asReal(words#)-1)*depth(metric)) + calcNetLength(metric, words)))/2
+
+FUN calcDepthForJustifyAlignment : metrics ** seq[string] -> real
+DEF calcDepthForJustifyAlignment(metric, words) == 
+	(lineLength - calcNetLength(metric, words)) / (asReal(words#)-1)
+
+FUN calcNetLength : metrics ** seq[string] -> real
+DEF calcNetLength(metric, <>) == 0
+DEF calcNetLength(metric, words) == length(metric, (`(ft(words)))) + calcNetLength(metric, rt(words))
+
+FUN calcSpaceBetweenParagraphs : metrics -> real
+DEF calcSpaceBetweenParagraphs(metric) == asReal(ParagraphLineSpace) * height(metric)
+
+FUN layoutLine : metrics ** real ** real ** real ** seq[string] ** seq[posWord] -> seq[posWord]
+DEF layoutLine(metric, xPos, yPos, space, <>, posWords) == posWords
+DEF layoutLine(metric, xPos, yPos, space, words, posWords) ==
+	LET
+		currentWord == ft(words)
+		nextWords == rt(words)
+		adjustedWordXPos == adjustWordXPos(metric, xPos, currentWord)
+		wordLength == length(metric, `(currentWord))
+		nextXPos == calcNextWordPos(metric, xPos, space, wordLength, nextWords)
+		newPositionedWord == posWord(currentWord, (`(adjustedWordXPos) @ `(yPos)), wordLength)
+	IN
+		layoutLine(metric, nextXPos, yPos, space, nextWords, newPositionedWord :: posWords)
+
+FUN adjustWordXPos : metrics ** real ** string -> real
+DEF adjustWordXPos(metric, xPos, word) == (xPos+(length(metric, (`(word))))/2)
+
+FUN calcNextWordPos : metrics ** real ** real ** real ** seq[string] -> real
+DEF calcNextWordPos(metric, xPos, space, lengthOfCurrentWord, nextWords) ==
+	xPos + lengthOfCurrentWord + space
+
+FUN isSpaceForThisWord: metrics ** real ** string -> bool
+DEF isSpaceForThisWord(metric, currentLength, word) == (currentLength + length(metric, (`(word)))) <= lineLength
+	
+FUN rightEndPos : real
+DEF rightEndPos == width(ViewSize)-(ViewRightBorder)
+
+FUN lineLength : real
+DEF lineLength == width(ViewSize)-(ViewLeftBorder+ViewRightBorder)
+
+FUN startYPos : metrics -> real
+DEF startYPos(metric) == ViewTopBorder + (lineskip(metric)/2)
+
+FUN startXPos : metrics -> real
+DEF startXPos(metric) == ViewLeftBorder
+
+FUN length : metrics ** denotation -> real
+DEF length(m,t) == xd(dimensions(m)(t))
+
+FUN xd: real ** real -> real
+DEF xd(x,y) == x
+
+

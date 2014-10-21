@@ -1,0 +1,8 @@
+IMPLEMENTATION Token 
+
+IMPORT String COMPLETELY
+
+
+DATA token == openHtml closeHtml openTitle closeTitle openBody closeBody openLeft openRight openCenter openJustify closePar word(content:string) error
+
+

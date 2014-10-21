@@ -1,0 +1,8 @@
+SIGNATURE Token
+
+IMPORT String COMPLETELY
+
+
+TYPE token == openHtml closeHtml openTitle closeTitle openBody closeBody openLeft openRight openCenter openJustify closePar word(content:string) error
+
+

@@ -1,0 +1,11 @@
+SIGNATURE Parser
+
+IMPORT Token COMPLETELY
+IMPORT Seq COMPLETELY
+IMPORT Syntax COMPLETELY
+
+FUN parseH:seq[token] -> html ** seq[token]
+
+FUN makehtml: html ** seq[token] -> html
+
+FUN checkhtml: html ** seq[token] -> bool

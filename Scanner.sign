@@ -1,0 +1,9 @@
+SIGNATURE Scanner
+
+IMPORT Token COMPLETELY
+IMPORT String COMPLETELY
+IMPORT Seq COMPLETELY
+
+FUN scan: string -> seq[token]
+
+FUN bts : seq[token] -> seq[string]

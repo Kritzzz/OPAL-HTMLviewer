@@ -1,61 +1,113 @@
 IMPLEMENTATION Viewer
 
-DATA 	gui == 	gui(edit : canvasEditor,
-					emit : emitter[action],
-					title: denotation,
-					metr : metrics)
-
-DATA 	action == exit
-
-FUN viewer : com[void]
-FUN setupGui : com[gui]
-FUN setupWindow : gui -> com[window]
-FUN waitForTermination : gui ** window -> com[void]
-FUN frame : gui -> view
-FUN pad : canvasEditor -> view
-FUN exitButton : emitter[action] -> view
-
-DEF viewer == 	setupGui & (\\G.
-			  	setupWindow(G) & (\\win. 
-
-			  	-- drawText(G) &
-				waitForTermination(G, win)))
-
--- 
--- Build WINDOW
---
 
 
-DEF setupGui == canvasEditor & (\\edit.
-				emitter & (\\emit.
-				fontMetrics(stdFont) & (\\metr.
-				succeed(gui(edit, emit, "Viewer", metr)))))
+IMPORT	Real COMPLETELY
+	RealConv COMPLETELY
+	Nat  COMPLETELY
+	Seq  COMPLETELY
+	Denotation COMPLETELY	
+IMPORT String COMPLETELY
+IMPORT StringConv COMPLETELY
+
+IMPORT	Com COMPLETELY
+	ComCompose COMPLETELY
+	Void COMPLETELY
+	BasicIO COMPLETELY
+
+IMPORT	WinButton COMPLETELY
+	WinCanvas COMPLETELY
+	WinCanvasEditor COMPLETELY
+	WinConfig COMPLETELY
+	WinEmitter COMPLETELY
+	WinView COMPLETELY
+	WinWindow COMPLETELY
 
 
-DEF setupWindow(G) == window(frame(G)) & (\\win.
-						set(win, titleName(title(G))) & 
-						(\\ _ . grab(win) & 
-						(\\ _ . succeed(win))))
+IMPORT ProcessArgs ONLY args arg
+
+IMPORT Layout COMPLETELY
+IMPORT Draw ONLY draw
+IMPORT Settings COMPLETELY
+IMPORT WinFontMetrics COMPLETELY
+IMPORT Scanner COMPLETELY
+IMPORT Parser COMPLETELY
+IMPORT File COMPLETELY
 
 
-DEF waitForTermination(G, win) ==
-			await(emit(G)) & (\\act.
-			IF act exit? THEN release(win) & delete(win) & exit(0) FI)
+FUN testWords : seq[posWord]
+DEF testWords == 
+	posWord("Hallo"!,"50"@"20",10) :: <>
+
+-- main program
+DEF viewer ==
+  args & (\\ cArgs. 
+  IF checkArgs(cArgs) THEN displayText("Titel")
+  ELSE usage(0)
+  FI
+)	
+
+-- check arguments of fractal, number of args must be 2 (programname and filename of tiny html text)
+FUN checkArgs : seq[denotation] -> bool
+DEF checkArgs(args) == 
+	IF #(args) |= 2 THEN false
+	ELSE true
+	FI 
+
+-- this output shows the usage of viewer in case of invalid parameters
+FUN usage : nat -> com[void]
+DEF usage(ex) == writeLine("the number of arguments has to be one and the name of the inputfile") & exit(ex) 
+
+-- this output appears if the inputfile is not a valid html file
+FUN nothtml : nat ->  com[void]
+DEF nothtml(ex) == writeLine("the input file is not a valid html file") & exit(ex)
+
+-- the output appears if the input file doesn't exist
+FUN nofile : nat ->  com[void]
+DEF nofile(ex) == writeLine("the input file doesn't exist") & exit(ex)
 
 
-FUN drawText : gui -> com[void]
-DEF drawText(G) == display(edit(G), picture(metr(G)))
+-- the text display function and the control of the exit button to close the program
+FUN displayText : denotation ->  com[void]
+DEF displayText(titel) ==
+	emitter & (\\dismiss.
+	canvasEditor & (\\ceditor.
+	window(size(WindowSize), frame(dismiss, ceditor)) & (\\w.
+	fontMetrics(WindowFont) & (\\metric.
+	arg(1) & (\\file.
+	readfile(file) & (\\input.
+	IF checkhtml(parseH(scan(input))) THEN 
+			set(w,titleName(`(convseq(content(title(makehtml(parseH(scan(input))))))))) &
+			display(ceditor, draw(layout(metric, (content(body(makehtml(parseH(scan(input))))))))) &
+			await(dismiss) & 
+			exit(0) 
+					   ELSE nothtml(0) FI )
+						 )))))
+
+FUN readfile: denotation -> com[string]
+-- reads the input file
+DEF readfile(name)	== open(name, "r") & (\\file.
+			      readLines(file) & (\\content.
+			      succeed(convseq(content))))
+
+FUN convseq: seq[string] -> string
+-- converts a list of strings into a single string
+DEF convseq(<>) == <>
+DEF convseq(s::rest) == s ++ !"\n" ++ convseq(rest)  
+							
 
 
-DEF frame(G) == pad(edit(G))
-				^^
-				exitButton(emit(G))
+-- window frame contains the drawing controlled by a CanvasEditor and the exit button
+FUN frame : emitter[void] ** canvasEditor -> view
+DEF frame(dismiss, myCanvasEditor) == makeView(myCanvasEditor) ^^ exitButton(dismiss)
 
+FUN makeView : canvasEditor -> view
+DEF makeView(myCanvasEditor) == canvas with (
+	size(ViewSize) ++ 
+	background(WindowColor) ++ 
+	edit(myCanvasEditor))
 
-DEF pad(editor) == 	canvas with (size(canvasSize)
-					++ edit(editor)
-					++ background(canvasBackground))
+-- draw exit button and bind dismiss event for exit
+FUN exitButton : emitter[void] -> view
+DEF exitButton(dismiss) == button with (bind(dismiss, nil) ++ text("Exit"))
 
-
-DEF exitButton(emit) == button with (bind(emit, exit)
-						++ text("Beenden"))

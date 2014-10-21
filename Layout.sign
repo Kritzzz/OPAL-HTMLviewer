@@ -1,0 +1,14 @@
+
+SIGNATURE Layout
+
+IMPORT	String		ONLY string
+	WinConfig	ONLY point
+	Real		ONLY real
+IMPORT Seq ONLY seq
+IMPORT	Syntax		COMPLETELY
+IMPORT WinFontMetrics ONLY metrics
+
+FUN layout : metrics ** seq[par] -> seq[posWord]
+
+TYPE posWord == posWord(text: string, pos: point, with:real)
+

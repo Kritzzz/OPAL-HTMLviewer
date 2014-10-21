@@ -1,28 +1,12 @@
 SIGNATURE Draw
 
-IMPORT 	Com COMPLETELY
-		ComCompose COMPLETELY
-		Denotation COMPLETELY
-		Nat COMPLETELY
-		Real COMPLETELY
-		Seq COMPLETELY
-		Void COMPLETELY
+IMPORT	Seq		ONLY seq
+	WinCanvasEditor ONLY drawing
+IMPORT	Layout		ONLY posWord
+IMPORT	String		ONLY string
+	WinConfig	ONLY point
+	Real		ONLY real
+IMPORT WinFontMetrics 	ONLY metrics
 
-IMPORT 	WinButton COMPLETELY
-		WinCanvas COMPLETELY
-		WinCanvasEditor COMPLETELY
-		WinConfig COMPLETELY
-		WinEmitter COMPLETELY
-		WinFontMetrics COMPLETELY
-		WinWindow COMPLETELY
-		WinView COMPLETELY
-
-IMPORT Settings COMPLETELY
-
-
--- FUN drawText : gui -> com[void]
-
-FUN picture : metrics -> drawing
-
-FUN line : drawing
+FUN draw : seq[posWord] -> drawing
 

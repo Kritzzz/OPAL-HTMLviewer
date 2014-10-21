@@ -1,10 +1,19 @@
 IMPLEMENTATION Draw
 
+IMPORT Seq ONLY seq ft rt <>
+IMPORT WinCanvasEditor ONLY drawing ++ with {} text
+IMPORT WinConfig COMPLETELY
+IMPORT WinFontMetrics ONLY font
+IMPORT Settings ONLY WindowFont
+IMPORT Layout ONLY posWord
 
-
--- DEF drawText(G) == display(edit(G), picture(metr(G)))
-
-DEF picture(metr) == line 
-
-DEF line == line(%(left @ ("40" px), right @ ("40" px)))
+DEF draw(<>) == {}
+DEF draw(posWords) == 
+	LET 
+		posWord == ft(posWords)
+		nextWords == rt(posWords)
+		word == text(posWord)
+		wordPosition == pos(posWord)
+	IN
+		(text(wordPosition) with (font(WindowFont) ++ text(word))) ++ draw(nextWords)
 

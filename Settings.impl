@@ -1,37 +1,16 @@
 IMPLEMENTATION Settings
 
-IMPORT 	Com COMPLETELY
-		ComCompose COMPLETELY
-		Denotation COMPLETELY
-		Nat COMPLETELY
-		Real COMPLETELY
-		Seq COMPLETELY
-		Void COMPLETELY
+IMPORT Denotation COMPLETELY
+IMPORT WinConfig ONLY font black white x
+IMPORT Real ONLY 10
+IMPORT Nat ONLY 2
 
-
-IMPORT 	WinButton COMPLETELY
-		WinCanvas COMPLETELY
-		WinCanvasEditor COMPLETELY
-		WinConfig COMPLETELY
-		WinEmitter COMPLETELY
-		WinFontMetrics COMPLETELY
-		WinWindow COMPLETELY
-		WinView COMPLETELY
-
-
-DEF canvasWidth == "800" px
-DEF canvasHeight == "600" px
-
-DEF canvasSize == canvasWidth x canvasHeight
-
-DEF margin == "50" px
-
-DEF left == margin
-DEF right == canvasWidth-margin
-DEF middle == canvasWidth/2
-
-DEF canvasBackground == white
-
-DEF sampleText == "Hallo"
-
-DEF stdFont == variable
+DEF WindowColor == white
+DEF WindowSize == "100" x "200"
+DEF ViewSize == "100" x "180"
+DEF ViewLeftBorder == 10
+DEF ViewRightBorder == 10
+DEF ViewTopBorder == 10
+DEF WindowFont == font("Courier")
+DEF WindowFontColor == black
+DEF ParagraphLineSpace == 2

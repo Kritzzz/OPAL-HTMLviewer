@@ -1,22 +1,8 @@
+
 SIGNATURE Viewer
 
-IMPORT 	Com COMPLETELY
-		ComCompose COMPLETELY
-		Denotation COMPLETELY
-		Nat COMPLETELY
-		Real COMPLETELY
-		Seq COMPLETELY
-		Void COMPLETELY
-		
-IMPORT 	WinButton COMPLETELY
-		WinCanvas COMPLETELY
-		WinCanvasEditor COMPLETELY
-		WinConfig COMPLETELY
-		WinEmitter COMPLETELY
-		WinFontMetrics COMPLETELY
-		WinWindow COMPLETELY
-		WinView COMPLETELY
+IMPORT	Void		ONLY void
+	Com[void]	ONLY com
 
-IMPORT 	Settings COMPLETELY
-		Draw COMPLETELY
+FUN viewer : com[void]
 
